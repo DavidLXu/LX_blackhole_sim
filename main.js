@@ -23,18 +23,18 @@ const precisionQualifier = fragmentPrecision && fragmentPrecision.precision > 0 
 const state = {
   camera: {
     yaw: 0.18,
-    pitch: 0.18,
+    pitch: 0.7,
     distance: 9.8,
     targetYaw: 0.18,
-    targetPitch: 0.18,
+    targetPitch: 0.7,
     targetDistance: 9.8,
     yawVelocity: 0,
     pitchVelocity: 0,
     distanceVelocity: 0,
   },
   params: {
-    spin: 0.72,
-    mass: 0.9,
+    spin: 0.2,
+    mass: 0.6,
     tilt: 0.42,
     diskSize: 1.0,
     exposure: 1.12,
@@ -218,7 +218,7 @@ vec3 starField(vec3 rd, float density) {
   vec2 uv = sphereUv * grid;
   vec2 cell = floor(uv);
   vec2 local = fract(uv) - 0.5;
-  vec3 stars = vec3(0.01, 0.015, 0.026);
+  vec3 stars = vec3(0.007, 0.010, 0.018);
 
   for (int y = -1; y <= 1; y++) {
     for (int x = -1; x <= 1; x++) {
@@ -233,7 +233,7 @@ vec3 starField(vec3 rd, float density) {
         float core = 1.0 - smoothstep(0.0, 0.24, d);
         float halo = 1.0 - smoothstep(0.0, 0.68, d);
         vec3 tint = mix(vec3(0.68, 0.82, 1.0), vec3(1.0, 0.82, 0.64), hash21(id + 9.1));
-        stars += tint * (core * 1.6 + halo * 0.18) * (0.5 + seed * 2.3);
+        stars += tint * (core * 1.35 + halo * 0.14) * (0.38 + seed * 1.8);
       }
     }
   }
@@ -244,10 +244,23 @@ vec3 starField(vec3 rd, float density) {
   float bandCore = exp(-pow((galaxyLat + 0.03 * cos(rd.z * 8.0)) / 0.11, 2.0));
   float dustLane = 1.0 - smoothstep(0.0, 0.06, abs(galaxyLat + 0.04 * sin(rd.z * 12.0)));
 
-  stars += vec3(0.12, 0.16, 0.25) * bandWide;
-  stars += vec3(0.24, 0.22, 0.30) * bandCore * (0.7 + 0.3 * sin(sphereUv.x * 18.0));
+  stars += vec3(0.055, 0.085, 0.145) * bandWide;
+  stars += vec3(0.105, 0.145, 0.235) * bandCore * (0.7 + 0.3 * sin(sphereUv.x * 18.0));
   stars *= 1.0 - dustLane * 0.26;
-  stars += vec3(0.08, 0.04, 0.12) * bandWide * (0.5 + 0.5 * sin(sphereUv.x * 22.0 + sphereUv.y * 9.0));
+  stars += vec3(0.03, 0.024, 0.07) * bandWide * (0.5 + 0.5 * sin(sphereUv.x * 22.0 + sphereUv.y * 9.0));
+
+  vec3 galaxyAxis2 = normalize(vec3(-0.56, 0.46, 0.69));
+  float galaxyLat2 = dot(rd, galaxyAxis2);
+  float bandWide2 = exp(-pow((galaxyLat2 + 0.04 * cos(rd.y * 6.0)) / 0.24, 2.0));
+  float bandCore2 = exp(-pow((galaxyLat2 + 0.03 * sin(rd.x * 9.0 - rd.z * 4.0)) / 0.085, 2.0));
+  float dustLane2 = 1.0 - smoothstep(0.0, 0.045, abs(galaxyLat2 + 0.03 * sin(rd.z * 10.0)));
+
+  stars += vec3(0.08, 0.055, 0.04) * bandWide2;
+  stars += vec3(0.16, 0.11, 0.07) * bandCore2 * (0.65 + 0.35 * cos(sphereUv.x * 13.0 + sphereUv.y * 8.0));
+  stars *= 1.0 - dustLane2 * 0.18;
+  stars += vec3(0.045, 0.02, 0.018) * bandWide2 * (0.45 + 0.55 * sin(sphereUv.x * 17.0 - sphereUv.y * 11.0));
+
+  stars *= 0.82;
   return stars;
 }
 
@@ -294,10 +307,18 @@ void main() {
   vec3 up = normalize(cross(right, forward));
   vec3 dir = normalize(forward + uv.x * right + uv.y * up + 0.05 * uv.x * uv.x * forward);
 
+  if (mass <= 0.0001) {
+    vec3 skyOnly = starField(dir, starDensity) * exposure;
+    skyOnly = skyOnly / (vec3(1.0) + skyOnly);
+    gl_FragColor = vec4(pow(max(skyOnly, vec3(0.0)), vec3(1.0 / 2.2)), 1.0);
+    return;
+  }
+
   float horizonRadius = mass * (1.0 + sqrt(max(0.0, 1.0 - spin * spin)));
   float photonSphere = 3.0 * mass;
   float innerEdge = max(kerrIsco(spin) * mass, horizonRadius * 1.06) * diskSize;
   float outerEdge = max(innerEdge + 0.4, 10.8 * mass * diskSize);
+  float diskTime = u_time * (0.72 + 0.28 * spin);
 
   mat3 diskTilt = rotateY(0.16) * rotateX(diskTiltAmount);
   vec3 diskNormal = normalize(diskTilt * vec3(0.0, 1.0, 0.0));
@@ -348,9 +369,9 @@ void main() {
         float vertical = exp(-(height * height) / max(2.0 * thickness * thickness, 0.0002));
         float radialMask = smoothstep(innerEdge, innerEdge + 0.45, diskR) * (1.0 - smoothstep(outerEdge - 1.4, outerEdge, diskR));
         float phi = atan(diskCoord.y, diskCoord.x);
-        float turbulence = fbm(vec3(diskCoord * 3.4, u_time * 0.18 + diskR * 0.2));
-        float clumps = 0.52 + 0.48 * noise3(vec3(diskCoord * 7.2, u_time * 0.28 - phi * 1.7));
-        float spiral = 0.5 + 0.5 * sin(phi * 2.0 - u_time * (1.6 + 0.4 * spin) - diskR * 4.2);
+        float turbulence = fbm(vec3(diskCoord * 3.4, diskTime * 0.42 + diskR * 0.2));
+        float clumps = 0.52 + 0.48 * noise3(vec3(diskCoord * 7.2, diskTime * 0.68 - phi * 1.7));
+        float spiral = 0.5 + 0.5 * sin(phi * 2.0 - diskTime * (1.1 + 0.3 * spin) - diskR * 4.2);
         float density = densityBoost * vertical * radialMask * mix(0.52, 1.14, turbulence) * mix(0.7, 1.18, clumps) * mix(0.88, 1.18, spiral);
 
         if (density > 0.0001) {
