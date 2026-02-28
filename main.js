@@ -1,6 +1,10 @@
 const canvas = document.getElementById("gl");
 const statusEl = document.getElementById("status");
 const screenshotButton = document.getElementById("screenshot");
+const controlPanel = document.getElementById("controlPanel");
+const panelToggle = document.getElementById("panelToggle");
+const controlGroups = Array.from(document.querySelectorAll(".control-group"));
+const compactPanelMedia = matchMedia("(max-width: 720px)");
 
 const gl =
   canvas.getContext("webgl", {
@@ -55,10 +59,71 @@ const state = {
     qualityBias: 1,
     lastScaleAdjust: 0,
   },
+  ui: {
+    compactPanelOpen: false,
+    lastCompactLayout: null,
+  },
 };
 
 function setStatus(message) {
   statusEl.textContent = message;
+}
+
+function setPanelOpen(isOpen) {
+  state.ui.compactPanelOpen = isOpen;
+  controlPanel.classList.toggle("is-open", isOpen);
+  panelToggle.setAttribute("aria-expanded", String(isOpen));
+  panelToggle.textContent = isOpen ? "Close" : "Open";
+}
+
+function syncControlPanelLayout() {
+  const compactLayout = compactPanelMedia.matches;
+
+  if (compactLayout) {
+    if (state.ui.lastCompactLayout !== true) {
+      controlGroups.forEach((group) => {
+        group.open = group.dataset.mobileDefaultOpen === "true";
+      });
+      setPanelOpen(false);
+    } else {
+      setPanelOpen(state.ui.compactPanelOpen);
+    }
+  } else {
+    controlGroups.forEach((group) => {
+      group.open = true;
+    });
+    setPanelOpen(true);
+  }
+
+  state.ui.lastCompactLayout = compactLayout;
+}
+
+controlGroups.forEach((group) => {
+  group.addEventListener("toggle", () => {
+    if (!compactPanelMedia.matches || !group.open) {
+      return;
+    }
+
+    controlGroups.forEach((otherGroup) => {
+      if (otherGroup !== group) {
+        otherGroup.open = false;
+      }
+    });
+  });
+});
+
+panelToggle.addEventListener("click", () => {
+  if (!compactPanelMedia.matches) {
+    return;
+  }
+
+  setPanelOpen(!state.ui.compactPanelOpen);
+});
+
+if (compactPanelMedia.addEventListener) {
+  compactPanelMedia.addEventListener("change", syncControlPanelLayout);
+} else {
+  compactPanelMedia.addListener(syncControlPanelLayout);
 }
 
 [
@@ -637,5 +702,6 @@ canvas.addEventListener("webglcontextrestored", () => {
 
 window.addEventListener("resize", updateRenderScale);
 updateRenderScale();
+syncControlPanelLayout();
 setStatus(`GPU renderer ready (${precisionQualifier}, WebGL 1)`);
 requestAnimationFrame(render);

@@ -12,61 +12,85 @@
       <div class="title">Event Horizon Nocturne</div>
       <div class="subtitle">A more cinematic black-hole study with geodesic-inspired lensing, incandescent accretion flow, volumetric dust, and painterly nebula light</div>
     </div>
-    <div class="panel">
-      <label>
-        <span>Spin</span>
-        <input id="spin" type="range" min="0" max="0.99" step="0.01" value="0.2" />
-        <output id="spinValue">0.20</output>
-      </label>
-      <label>
-        <span>Mass</span>
-        <input id="mass" type="range" min="0" max="1.8" step="0.01" value="0.6" />
-        <output id="massValue">0.60</output>
-      </label>
-      <label>
-        <span>Disk Tilt</span>
-        <input id="tilt" type="range" min="0.1" max="1.2" step="0.01" value="0.42" />
-        <output id="tiltValue">0.42</output>
-      </label>
-      <label>
-        <span>Disk Size</span>
-        <input id="diskSize" type="range" min="0.6" max="2.2" step="0.01" value="1.0" />
-        <output id="diskSizeValue">1.00</output>
-      </label>
-      <label>
-        <span>Exposure</span>
-        <input id="exposure" type="range" min="0.6" max="1.8" step="0.01" value="1.12" />
-        <output id="exposureValue">1.12</output>
-      </label>
-      <label>
-        <span>Disk Temp</span>
-        <input id="temperature" type="range" min="0.7" max="2.1" step="0.01" value="1.28" />
-        <output id="temperatureValue">1.28</output>
-      </label>
-      <label>
-        <span>Disk Density</span>
-        <input id="density" type="range" min="0.5" max="2.4" step="0.01" value="1.18" />
-        <output id="densityValue">1.18</output>
-      </label>
-      <label>
-        <span>Lensing</span>
-        <input id="lensing" type="range" min="0.7" max="2.2" step="0.01" value="1.25" />
-        <output id="lensingValue">1.25</output>
-      </label>
-      <label>
-        <span>Bloom</span>
-        <input id="bloom" type="range" min="0" max="1.5" step="0.01" value="0.52" />
-        <output id="bloomValue">0.52</output>
-      </label>
-      <label>
-        <span>Star Density</span>
-        <input id="stars" type="range" min="1.2" max="4.2" step="0.01" value="3.4" />
-        <output id="starsValue">3.40</output>
-      </label>
-      <div class="actions">
-        <button id="screenshot" type="button">Screenshot</button>
+    <div id="controlPanel" class="panel">
+      <div class="panel-header">
+        <div class="panel-heading">
+          <div class="panel-kicker">Scene Controls</div>
+          <div class="panel-summary">Adjust gravity, disk structure, and post-processing without crowding the mobile view.</div>
+        </div>
+        <button id="panelToggle" class="panel-toggle" type="button" aria-expanded="false" aria-controls="panelBody">Open</button>
       </div>
-      <div id="status" class="status">CPU renderer ready</div>
+      <div id="panelBody" class="panel-body">
+        <details class="control-group" data-mobile-default-open="true" open>
+          <summary>Black Hole</summary>
+          <div class="control-group-body">
+            <label>
+              <span>Spin</span>
+              <input id="spin" type="range" min="0" max="0.99" step="0.01" value="0.2" />
+              <output id="spinValue">0.20</output>
+            </label>
+            <label>
+              <span>Mass</span>
+              <input id="mass" type="range" min="0" max="1.8" step="0.01" value="0.6" />
+              <output id="massValue">0.60</output>
+            </label>
+            <label>
+              <span>Lensing</span>
+              <input id="lensing" type="range" min="0.7" max="2.2" step="0.01" value="1.25" />
+              <output id="lensingValue">1.25</output>
+            </label>
+          </div>
+        </details>
+        <details class="control-group" open>
+          <summary>Accretion Disk</summary>
+          <div class="control-group-body">
+            <label>
+              <span>Disk Tilt</span>
+              <input id="tilt" type="range" min="0.1" max="1.2" step="0.01" value="0.42" />
+              <output id="tiltValue">0.42</output>
+            </label>
+            <label>
+              <span>Disk Size</span>
+              <input id="diskSize" type="range" min="0.6" max="2.2" step="0.01" value="1.0" />
+              <output id="diskSizeValue">1.00</output>
+            </label>
+            <label>
+              <span>Disk Temp</span>
+              <input id="temperature" type="range" min="0.7" max="2.1" step="0.01" value="1.28" />
+              <output id="temperatureValue">1.28</output>
+            </label>
+            <label>
+              <span>Disk Density</span>
+              <input id="density" type="range" min="0.5" max="2.4" step="0.01" value="1.18" />
+              <output id="densityValue">1.18</output>
+            </label>
+          </div>
+        </details>
+        <details class="control-group" open>
+          <summary>Image Treatment</summary>
+          <div class="control-group-body">
+            <label>
+              <span>Exposure</span>
+              <input id="exposure" type="range" min="0.6" max="1.8" step="0.01" value="1.12" />
+              <output id="exposureValue">1.12</output>
+            </label>
+            <label>
+              <span>Bloom</span>
+              <input id="bloom" type="range" min="0" max="1.5" step="0.01" value="0.52" />
+              <output id="bloomValue">0.52</output>
+            </label>
+            <label>
+              <span>Star Density</span>
+              <input id="stars" type="range" min="1.2" max="4.2" step="0.01" value="3.4" />
+              <output id="starsValue">3.40</output>
+            </label>
+          </div>
+        </details>
+        <div class="actions">
+          <button id="screenshot" type="button">Screenshot</button>
+        </div>
+        <div id="status" class="status">CPU renderer ready</div>
+      </div>
     </div>
     <script src="./main.js"></script>
   </body>

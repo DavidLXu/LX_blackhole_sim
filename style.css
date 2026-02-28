@@ -1,3 +1,14 @@
+:root {
+  --panel-border: rgba(255, 237, 212, 0.16);
+  --panel-text: rgba(247, 235, 220, 0.92);
+  --panel-muted: rgba(215, 226, 247, 0.82);
+  --panel-accent: #ffb74d;
+  --panel-bg:
+    linear-gradient(180deg, rgba(10, 13, 21, 0.74), rgba(7, 10, 18, 0.56)),
+    radial-gradient(circle at top right, rgba(255, 185, 106, 0.12), transparent 32%);
+  --panel-shadow: 0 18px 60px rgba(0, 0, 0, 0.28);
+}
+
 html,
 body {
   margin: 0;
@@ -45,6 +56,7 @@ body::after {
 #gl {
   width: 100vw;
   height: 100vh;
+  height: 100svh;
   display: block;
 }
 
@@ -87,35 +99,131 @@ body::after {
   right: 20px;
   top: 20px;
   width: min(320px, calc(100vw - 32px));
+  max-height: calc(100vh - 40px);
+  max-height: calc(100svh - 40px);
   padding: 16px 16px 14px;
-  border: 1px solid rgba(255, 237, 212, 0.16);
+  border: 1px solid var(--panel-border);
   border-radius: 18px;
-  background:
-    linear-gradient(180deg, rgba(10, 13, 21, 0.74), rgba(7, 10, 18, 0.56)),
-    radial-gradient(circle at top right, rgba(255, 185, 106, 0.12), transparent 32%);
-  box-shadow: 0 18px 60px rgba(0, 0, 0, 0.28);
+  background: var(--panel-bg);
+  box-shadow: var(--panel-shadow);
   backdrop-filter: blur(20px);
+  color: var(--panel-text);
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.panel-header {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 12px;
+}
+
+.panel-heading {
+  min-width: 0;
+  display: grid;
+  gap: 4px;
+}
+
+.panel-kicker {
+  font-size: 10px;
+  letter-spacing: 0.2em;
+  text-transform: uppercase;
+  color: var(--panel-muted);
+}
+
+.panel-summary {
+  font-size: 12px;
+  line-height: 1.4;
+  color: rgba(241, 230, 214, 0.84);
+}
+
+.panel-toggle {
+  display: none;
+  align-items: center;
+  justify-content: center;
+  border: 1px solid rgba(255, 231, 205, 0.2);
+  border-radius: 999px;
+  padding: 8px 12px;
+  background: linear-gradient(135deg, rgba(255, 183, 77, 0.18), rgba(122, 168, 255, 0.12));
+  color: rgba(249, 236, 218, 0.94);
+  font: inherit;
+  font-size: 10px;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  cursor: pointer;
+}
+
+.panel-body {
+  min-height: 0;
+  display: grid;
+  gap: 10px;
+  overflow: auto;
+}
+
+.control-group {
+  margin: 0;
+  border: 1px solid rgba(255, 237, 212, 0.1);
+  border-radius: 14px;
+  background:
+    linear-gradient(180deg, rgba(255, 255, 255, 0.03), rgba(255, 255, 255, 0.015)),
+    linear-gradient(120deg, rgba(255, 183, 77, 0.05), rgba(102, 148, 255, 0.04));
+  overflow: hidden;
+}
+
+.control-group summary {
+  list-style: none;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 10px 12px;
+  cursor: pointer;
+  font-size: 11px;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
   color: rgba(247, 235, 220, 0.92);
+}
+
+.control-group summary::-webkit-details-marker {
+  display: none;
+}
+
+.control-group summary::after {
+  content: "";
+  width: 8px;
+  height: 8px;
+  border-right: 1px solid currentColor;
+  border-bottom: 1px solid currentColor;
+  transform: rotate(45deg);
+  transition: transform 180ms ease;
+}
+
+.control-group[open] summary::after {
+  transform: rotate(-135deg) translate(-1px, -1px);
+}
+
+.control-group-body {
+  display: grid;
+  gap: 10px;
+  padding: 0 12px 12px;
 }
 
 .panel label {
   display: grid;
-  grid-template-columns: 84px minmax(0, 1fr) 44px;
+  grid-template-columns: 82px minmax(0, 1fr) 44px;
   align-items: center;
   gap: 10px;
-  margin-bottom: 10px;
+  margin: 0;
   font-size: 11px;
   letter-spacing: 0.08em;
   text-transform: uppercase;
 }
 
-.panel label:last-child {
-  margin-bottom: 0;
-}
-
 .panel input[type="range"] {
   width: 100%;
-  accent-color: #ffb74d;
+  accent-color: var(--panel-accent);
   filter: saturate(1.15);
 }
 
@@ -129,7 +237,7 @@ body::after {
   display: grid;
   grid-template-columns: minmax(0, 1fr);
   gap: 8px;
-  margin-top: 14px;
+  margin-top: 4px;
 }
 
 .actions button {
@@ -152,7 +260,7 @@ body::after {
 }
 
 .status {
-  margin-top: 10px;
+  margin-top: 2px;
   min-height: 1.3em;
   font-size: 12px;
   opacity: 0.8;
@@ -178,18 +286,106 @@ body::after {
     right: 16px;
   }
 
+  .title {
+    font-size: clamp(28px, 8.2vw, 40px);
+  }
+
+  .subtitle {
+    max-width: 72vw;
+    font-size: 10px;
+    display: -webkit-box;
+    -webkit-line-clamp: 3;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+  }
+
+  .subtitle::after {
+    content: "";
+  }
+
   .panel {
     top: auto;
-    left: 16px;
-    right: 16px;
-    bottom: 16px;
+    left: 12px;
+    right: 12px;
+    bottom: calc(12px + env(safe-area-inset-bottom));
     width: auto;
-    padding: 14px;
+    max-height: min(76svh, 640px);
+    padding: 12px;
+    gap: 0;
+    border-radius: 20px;
+  }
+
+  .panel::before {
+    content: "";
+    width: 42px;
+    height: 4px;
+    border-radius: 999px;
+    background: rgba(255, 255, 255, 0.18);
+    align-self: center;
+    margin-bottom: 10px;
+  }
+
+  .panel-header {
+    align-items: center;
+  }
+
+  .panel-summary {
+    font-size: 11px;
+  }
+
+  .panel-toggle {
+    display: inline-flex;
+    flex: 0 0 auto;
+  }
+
+  .panel-body {
+    max-height: 0;
+    opacity: 0;
+    overflow: hidden;
+    pointer-events: none;
+    margin-top: 0;
+    padding-top: 0;
+    transition:
+      max-height 220ms ease,
+      opacity 180ms ease,
+      margin-top 220ms ease,
+      padding-top 220ms ease;
+  }
+
+  .panel.is-open .panel-body {
+    max-height: min(54svh, 420px);
+    opacity: 1;
+    overflow: auto;
+    pointer-events: auto;
+    overscroll-behavior: contain;
+    margin-top: 12px;
+    padding-top: 12px;
+    border-top: 1px solid rgba(255, 237, 212, 0.12);
+  }
+
+  .control-group summary {
+    padding: 11px 12px;
+    font-size: 10px;
   }
 
   .panel label {
-    grid-template-columns: 72px minmax(0, 1fr) 40px;
-    gap: 8px;
-    font-size: 11px;
+    grid-template-columns: minmax(0, 1fr) auto;
+    grid-template-areas:
+      "name value"
+      "slider slider";
+    gap: 6px 10px;
+    font-size: 10px;
+  }
+
+  .panel label span {
+    grid-area: name;
+  }
+
+  .panel label input[type="range"] {
+    grid-area: slider;
+  }
+
+  .panel label output {
+    grid-area: value;
   }
 }
