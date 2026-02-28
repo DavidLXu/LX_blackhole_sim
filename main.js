@@ -58,6 +58,7 @@ const state = {
     avgFrameMs: 16.7,
     qualityBias: 1,
     lastScaleAdjust: 0,
+    userResolutionScale: 1,
   },
   ui: {
     compactPanelOpen: false,
@@ -127,22 +128,92 @@ if (compactPanelMedia.addEventListener) {
 }
 
 [
-  ["spin", "spinValue", "spin"],
-  ["mass", "massValue", "mass"],
-  ["tilt", "tiltValue", "tilt"],
-  ["diskSize", "diskSizeValue", "diskSize"],
-  ["exposure", "exposureValue", "exposure"],
-  ["temperature", "temperatureValue", "temperature"],
-  ["density", "densityValue", "density"],
-  ["lensing", "lensingValue", "lensing"],
-  ["bloom", "bloomValue", "bloom"],
-  ["stars", "starsValue", "stars"],
-].forEach(([inputId, outputId, key]) => {
+  {
+    inputId: "spin",
+    outputId: "spinValue",
+    apply: (value) => {
+      state.params.spin = value;
+    },
+  },
+  {
+    inputId: "mass",
+    outputId: "massValue",
+    apply: (value) => {
+      state.params.mass = value;
+    },
+  },
+  {
+    inputId: "tilt",
+    outputId: "tiltValue",
+    apply: (value) => {
+      state.params.tilt = value;
+    },
+  },
+  {
+    inputId: "diskSize",
+    outputId: "diskSizeValue",
+    apply: (value) => {
+      state.params.diskSize = value;
+    },
+  },
+  {
+    inputId: "exposure",
+    outputId: "exposureValue",
+    apply: (value) => {
+      state.params.exposure = value;
+    },
+  },
+  {
+    inputId: "temperature",
+    outputId: "temperatureValue",
+    apply: (value) => {
+      state.params.temperature = value;
+    },
+  },
+  {
+    inputId: "density",
+    outputId: "densityValue",
+    apply: (value) => {
+      state.params.density = value;
+    },
+  },
+  {
+    inputId: "lensing",
+    outputId: "lensingValue",
+    apply: (value) => {
+      state.params.lensing = value;
+    },
+  },
+  {
+    inputId: "bloom",
+    outputId: "bloomValue",
+    apply: (value) => {
+      state.params.bloom = value;
+    },
+  },
+  {
+    inputId: "stars",
+    outputId: "starsValue",
+    apply: (value) => {
+      state.params.stars = value;
+    },
+  },
+  {
+    inputId: "resolution",
+    outputId: "resolutionValue",
+    format: (value) => `${Math.round(value * 100)}%`,
+    apply: (value) => {
+      state.performance.userResolutionScale = value;
+      updateRenderScale();
+    },
+  },
+].forEach(({ inputId, outputId, apply, format = (value) => value.toFixed(2) }) => {
   const input = document.getElementById(inputId);
   const output = document.getElementById(outputId);
   const update = () => {
-    state.params[key] = Number(input.value);
-    output.value = Number(input.value).toFixed(2);
+    const value = Number(input.value);
+    apply(value);
+    output.value = format(value);
   };
   input.addEventListener("input", update);
   update();
@@ -559,9 +630,22 @@ function updateRenderScale() {
   const smallerDeviceScale = window.innerWidth < 700 ? 0.5 : baseScale;
   const qualityFloor = mobileLike ? 0.78 : 0.72;
   const adaptiveQuality = Math.max(qualityFloor, Math.min(1, state.performance.qualityBias));
-  state.renderScale = smallerDeviceScale * dpr * adaptiveQuality;
-  const width = Math.max(320, Math.floor(window.innerWidth * state.renderScale));
-  const height = Math.max(180, Math.floor(window.innerHeight * state.renderScale));
+  state.renderScale = smallerDeviceScale * dpr * adaptiveQuality * state.performance.userResolutionScale;
+  const cssWidth = Math.max(1, Math.floor(window.innerWidth));
+  const cssHeight = Math.max(1, Math.floor(window.innerHeight));
+  let width = Math.max(1, Math.floor(cssWidth * state.renderScale));
+  let height = Math.max(1, Math.floor(cssHeight * state.renderScale));
+
+  // Keep the render buffer aspect ratio locked to the viewport.
+  // On narrow screens, clamping width/height independently causes visible stretching.
+  const minShortSide = (mobileLike ? 200 : 240) * Math.min(1, state.performance.userResolutionScale);
+  const shortSide = Math.min(width, height);
+  if (shortSide < minShortSide) {
+    const boost = minShortSide / shortSide;
+    width = Math.max(1, Math.floor(width * boost));
+    height = Math.max(1, Math.floor(height * boost));
+  }
+
   canvas.width = width;
   canvas.height = height;
   gl.viewport(0, 0, width, height);
